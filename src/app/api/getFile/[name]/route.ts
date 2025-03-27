@@ -5,14 +5,15 @@ import { auth } from "@/auth";
 
 export async function GET(
     request: Request,
-    { params }: { params: { name: string } }
+    { params }: { params: Promise<{ name: string }> }
 ) {
+	const { name } = await params;
     const session = await auth();
     if (!session) {
-    return new NextResponse("Unauthorized", { status: 401 });
+        return new NextResponse("Unauthorized", { status: 401 });
     }
     try {
-        const fileName = params.name.replace(/-/g, "/") + ".pdf";
+        const fileName = name.replace(/-/g, "/") + ".pdf";
 
         if (!fileName) {
             return new NextResponse("File name is required", { status: 400 });

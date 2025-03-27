@@ -30,6 +30,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
 					const user = snapshot.docs[0].data();
 					const passwordMatch = await bcrypt.compare(
+						//@ts-expect-error
 						credentials.password,
 						user.password,
 					);
@@ -63,6 +64,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 		},
 		session: async ({ session, token }) => {
 			if (token) {
+				//@ts-expect-error
 				session.user.role = token.role;
 			}
 			return session;

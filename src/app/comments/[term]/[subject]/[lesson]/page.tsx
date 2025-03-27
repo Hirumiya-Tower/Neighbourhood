@@ -109,7 +109,7 @@ export default function CommentsPage() {
 			await deleteDoc(doc(db, "comments", id));
 			setComments((prev) => prev.filter((comment) => comment.id !== id));
 		} catch (error) {
-			toast.error("⚠️ Firestore のコメント削除中にエラー:", error);
+			toast.error(`⚠️ Firestore のコメント削除中にエラー: ${error}`);
 		}
 	};
 

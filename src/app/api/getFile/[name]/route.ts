@@ -4,41 +4,41 @@ import path from "node:path";
 import { auth } from "@/auth";
 
 export async function GET(
-	request: Request,
-	context: { params: { name: string } },
+    request: Request,
+    { params }: { params: { name: string } }
 ) {
-	const session = await auth();
-	if (!session) {
-		return new NextResponse("Unauthorized", { status: 401 });
-	}
-	try {
-		const fileName = context.params.name.replace(/-/g, "/") + ".pdf";
+    const session = await auth();
+    if (!session) {
+    return new NextResponse("Unauthorized", { status: 401 });
+    }
+    try {
+        const fileName = params.name.replace(/-/g, "/") + ".pdf";
 
-		if (!fileName) {
-			return new NextResponse("File name is required", { status: 400 });
-		}
+        if (!fileName) {
+            return new NextResponse("File name is required", { status: 400 });
+        }
 
-		const filePath = path.join(process.cwd(), "pdfs", fileName);
+        const filePath = path.join(process.cwd(), "pdfs", fileName);
 
-		console.log("Attempting to access file at:", filePath);
+        console.log("Attempting to access file at:", filePath);
 
-		try {
-			await fs.access(filePath);
-		} catch (error) {
-			console.error("File access error:", error);
-			return new NextResponse("File not found", { status: 404 });
-		}
+        try {
+            await fs.access(filePath);
+        } catch (error) {
+            console.error("File access error:", error);
+            return new NextResponse("File not found", { status: 404 });
+        }
 
-		const fileBuffer = await fs.readFile(filePath);
+        const fileBuffer = await fs.readFile(filePath);
 
-		const headers = {
-			"Content-Type": "application/pdf",
-			"Content-Disposition": `inline; filename="${path.basename(fileName)}"`,
-		};
+        const headers = {
+            "Content-Type": "application/pdf",
+            "Content-Disposition": `inline; filename="${path.basename(fileName)}"`,
+        };
 
-		return new NextResponse(fileBuffer, { headers });
-	} catch (error) {
-		console.error("Error fetching file:", error);
-		return new NextResponse("Internal Server Error", { status: 500 });
-	}
+        return new NextResponse(fileBuffer, { headers });
+    } catch (error) {
+        console.error("Error fetching file:", error);
+        return new NextResponse("Internal Server Error", { status: 500 });
+    }
 }

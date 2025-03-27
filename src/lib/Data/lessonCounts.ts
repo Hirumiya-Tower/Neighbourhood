@@ -1,5 +1,5 @@
 export const lessonNumbers: Record<string, number[]> = {
-	化学: [1],
+	化学: [],
 	化学演習: [],
 	機能形態学1: [],
 	数学1: [],

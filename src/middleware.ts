@@ -1,8 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
-import { redirect } from "next/navigation";
+import { NextResponse } from "next/server";
 import { auth } from "./auth";
 
-export default async function middleware(request: NextRequest) {
+export default async function middleware() {
 	const session = await auth();
 
 	if (!session) {

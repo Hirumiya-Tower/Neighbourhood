@@ -1,6 +1,5 @@
 "use client";
 
-import { signIn } from "next-auth/react";
 import { Switch } from "@mantine/core";
 import { createUser, type NewUser } from "@/lib/user-management";
 import { useState } from "react";

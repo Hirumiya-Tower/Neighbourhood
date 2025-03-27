@@ -3,11 +3,10 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useSession, signOut } from "next-auth/react";
-import { useRouter } from "next/navigation";
 
 export default function Sidebar() {
 	const [isMenuOpen, setIsMenuOpen] = useState(false);
-	const { data: session, status } = useSession();
+	const { data: session } = useSession();
 
 	const handleLogout = async () => {
 		await signOut({ redirectTo: "/" });

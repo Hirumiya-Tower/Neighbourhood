@@ -14,8 +14,8 @@ export default function ClientLessonPage() {
 
 	return (
 		<div className="max-w-6xl mx-auto px-4 py-8">
-			<h1 className="text-2xl font-semibold mb-6 border-b border-gray-700 pb-2 tracking-wide font-serif">
-				{termDisplay} の科目とコマを選択
+			<h1 className="text-2xl font-semibold mb-6 border-b border-gray-700 pb-2 tracking-wide font-sans">
+				{termDisplay} の授業を選択
 			</h1>
 
 			<div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -56,7 +56,7 @@ export default function ClientLessonPage() {
 														rel="noopener noreferrer"
 														className="px-3 py-1.5 text-xs sm:text-sm bg-emerald-800 hover:bg-emerald-700 text-white rounded-md transition-all"
 													>
-														{lessonNumber}コマ目
+														第{lessonNumber}回
 													</a>
 													<Link
 														href={commentUrl}
@@ -69,7 +69,7 @@ export default function ClientLessonPage() {
 											) : (
 												<>
 													<span className="px-3 py-1.5 text-xs sm:text-sm bg-gray-700 text-gray-400 rounded-md cursor-not-allowed opacity-60">
-														{lessonNumber}コマ目
+														第{lessonNumber}回
 													</span>
 													<span className="w-5 h-5" />
 												</>

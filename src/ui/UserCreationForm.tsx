@@ -47,7 +47,6 @@ export default function UserCreationForm() {
 					className="w-full bg-transparent border border-gray-600 rounded-md px-3 py-2 mb-4 focus:outline-none focus:ring-2 focus:ring-emerald-700 text-sm md:text-base"
 				/>
 				<input
-					type="password"
 					value={password}
 					onChange={(e) => setPassword(e.target.value)}
 					placeholder="password"

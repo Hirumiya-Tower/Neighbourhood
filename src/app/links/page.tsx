@@ -21,7 +21,7 @@ const links: LinkItem[] = [
 	},
 	{
 		label: "お問い合わせ、ご相談はこちら",
-		url: "tomo0096jp@gmail.com",
+		url: "mailto:tomo0096jp@gmail.com",
 	},
 ];
 

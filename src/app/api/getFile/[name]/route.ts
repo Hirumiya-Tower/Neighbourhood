@@ -35,6 +35,9 @@ export async function GET(
         const headers = {
             "Content-Type": "application/pdf",
             "Content-Disposition": `inline; filename="${path.basename(fileName)}"`,
+            "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+            "Expires": "0",
+            "Pragma": "no-cache",
         };
 
         return new NextResponse(fileBuffer, { headers });

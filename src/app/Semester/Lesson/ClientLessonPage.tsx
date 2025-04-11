@@ -40,7 +40,7 @@ export default function ClientLessonPage() {
 								{displayLessons.map((lessonNumber) => {
 									const exists =
 										lessons.includes(lessonNumber);
-									const pdfUrl = `/api/getFile/${encodeURIComponent(termFolder)}-${encodeURIComponent(subject)}-${lessonNumber}`;
+									const pdfUrl = `/api/getFile/${encodeURIComponent(termFolder)}-${encodeURIComponent(subject)}-${lessonNumber}?v=${Date.now()}`;
 									const commentUrl = `/comments/${encodeURIComponent(termFolder)}/${encodeURIComponent(subject)}/${lessonNumber}`;
 
 									return (

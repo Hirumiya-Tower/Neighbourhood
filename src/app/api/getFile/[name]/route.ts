@@ -8,61 +8,73 @@ export async function GET(
     request: Request,
     { params }: { params: Promise<{ name: string }> }
 ) {
-    const { name } = await params;
-    const session = await auth();
-    if (!session) {
-        return new NextResponse("Unauthorized", { status: 401 });
-    }
-    
     try {
-        // URLパラメータとリクエスト情報をログ出力
-        console.log("Original requested name:", name);
+        // パラメータ取得を確実に
+        const resolvedParams = await params;
+        const { name } = resolvedParams;
         
-        // ファイル名をデコード（URLエンコードされている可能性がある）
+        // ここでセッション確認
+        const session = await auth();
+        if (!session) {
+            return new NextResponse("Unauthorized", { status: 401 });
+        }
+        
+        // リクエスト情報の詳細ログ
+        console.log("Request URL:", request.url);
+        console.log("Raw name parameter:", name);
+        
+        if (!name) {
+            return new NextResponse("File name parameter is missing", { status: 400 });
+        }
+        
+        // パス変換をより安全に
         const decodedName = decodeURIComponent(name);
-        console.log("Decoded name:", decodedName);
-        
-        // パス変換
         const fileName = decodedName.replace(/-/g, "/") + ".pdf";
+        
         console.log("Converted file path:", fileName);
         
-        // セキュリティ対策（ディレクトリトラバーサル防止）
-        const safeFileName = fileName.replace(/\.\.\//g, '');
+        // 意図しないパスのアクセスを防止
+        if (fileName.includes('..') || !fileName.endsWith('.pdf')) {
+            return new NextResponse("Invalid file path", { status: 400 });
+        }
         
-        // ファイルパス生成 - より明示的に
-        const filePath = path.resolve(process.cwd(), "pdfs", safeFileName);
-        console.log("Full resolved file path:", filePath);
+        // 完全なファイルパスを生成
+        const filePath = path.join(process.cwd(), "pdfs", fileName);
+        console.log("Full file path:", filePath);
         
-        // ファイル存在確認
+        // ファイルの存在確認
         try {
-            await fs.access(filePath);
-            console.log("File exists at path:", filePath);
+            const stats = await fs.stat(filePath);
+            console.log("File exists, size:", stats.size, "bytes");
+            
+            if (stats.size === 0) {
+                return new NextResponse("Empty file", { status: 404 });
+            }
         } catch (error) {
-            console.error("File access error:", error);
-            return new NextResponse("File not found", { status: 404 });
+            console.error("File not found:", filePath);
+            return new NextResponse(`File not found: ${fileName}`, { status: 404 });
         }
         
         // ファイル読み込み
         const fileBuffer = await fs.readFile(filePath);
+        console.log("File read successfully, buffer length:", fileBuffer.length);
         
-        // キャッシュ制御を強化したヘッダー
-        const uniqueETag = `"${path.basename(filePath)}-${Date.now()}"`;
+        // 強力なキャッシュバスティング
+        const uniqueId = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
         
         const headers = {
             "Content-Type": "application/pdf",
-            "Content-Disposition": `inline; filename="${encodeURIComponent(path.basename(safeFileName))}"`,
+            "Content-Disposition": `inline; filename="${encodeURIComponent(path.basename(fileName))}"`,
             "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0, private",
             "Expires": "0",
             "Pragma": "no-cache",
-            "ETag": uniqueETag,
-            "Vary": "Accept-Encoding, Origin",
-            // 追加のキャッシュバスティング
-            "X-Content-Hash": uniqueETag
+            "X-Content-Hash": uniqueId,
+            "X-Requested-File": fileName // デバッグ用に追加
         };
         
         return new NextResponse(fileBuffer, { headers });
     } catch (error) {
-        console.error("Error fetching file:", error);
+        console.error("Unexpected error:", error);
         return new NextResponse("Internal Server Error", { status: 500 });
     }
 }

@@ -15,42 +15,49 @@ export async function GET(
     }
     
     try {
-        // URLからファイルパスへの変換をより明示的に
-        const fileName = name.replace(/-/g, "/") + ".pdf";
-        console.log("Requested file:", fileName);
+        // URLパラメータとリクエスト情報をログ出力
+        console.log("Original requested name:", name);
         
-        // パスの安全性を確保
-        const normalizedFileName = fileName.replace(/\.\.\//g, ''); // ディレクトリトラバーサル防止
+        // ファイル名をデコード（URLエンコードされている可能性がある）
+        const decodedName = decodeURIComponent(name);
+        console.log("Decoded name:", decodedName);
         
-        // 環境に応じたパス解決
-        let filePath;
-        if (process.env.VERCEL) {
-            // Vercel環境
-            filePath = join(process.cwd(), 'pdfs', normalizedFileName);
-        } else {
-            // ローカル環境
-            filePath = join(process.cwd(), 'pdfs', normalizedFileName);
-        }
+        // パス変換
+        const fileName = decodedName.replace(/-/g, "/") + ".pdf";
+        console.log("Converted file path:", fileName);
         
-        console.log("Attempting to access file at:", filePath);
+        // セキュリティ対策（ディレクトリトラバーサル防止）
+        const safeFileName = fileName.replace(/\.\.\//g, '');
         
-        // ファイルの存在確認
+        // ファイルパス生成 - より明示的に
+        const filePath = path.resolve(process.cwd(), "pdfs", safeFileName);
+        console.log("Full resolved file path:", filePath);
+        
+        // ファイル存在確認
         try {
             await fs.access(filePath);
+            console.log("File exists at path:", filePath);
         } catch (error) {
             console.error("File access error:", error);
             return new NextResponse("File not found", { status: 404 });
         }
         
+        // ファイル読み込み
         const fileBuffer = await fs.readFile(filePath);
         
-        // Response headersを明示的に設定
+        // キャッシュ制御を強化したヘッダー
+        const uniqueETag = `"${path.basename(filePath)}-${Date.now()}"`;
+        
         const headers = {
             "Content-Type": "application/pdf",
-            "Content-Disposition": `inline; filename="${encodeURIComponent(path.basename(normalizedFileName))}"`,
-            "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+            "Content-Disposition": `inline; filename="${encodeURIComponent(path.basename(safeFileName))}"`,
+            "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0, private",
             "Expires": "0",
             "Pragma": "no-cache",
+            "ETag": uniqueETag,
+            "Vary": "Accept-Encoding, Origin",
+            // 追加のキャッシュバスティング
+            "X-Content-Hash": uniqueETag
         };
         
         return new NextResponse(fileBuffer, { headers });

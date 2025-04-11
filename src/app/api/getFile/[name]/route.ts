@@ -35,11 +35,12 @@ export async function GET(
 
         const headers = {
             "Content-Type": "application/pdf",
-            "Content-Disposition": `inline; filename="${lessonNum}.pdf"`,
+            "Content-Disposition": `inline; filename="${term}-${subject}-${lessonNum}.pdf"`,
             "Cache-Control": "no-store, no-cache, must-revalidate",
             "Pragma": "no-cache",
             "Expires": "0",
         };
+        
 
         return new NextResponse(fileBuffer, { headers });
     } catch (error) {

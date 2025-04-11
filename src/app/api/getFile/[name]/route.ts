@@ -12,13 +12,10 @@ export async function GET(
     if (!session) {
         return new NextResponse("Unauthorized", { status: 401 });
     }
+
     try {
-        const fileName = name.replace(/-/g, "/") + ".pdf";
-
-        if (!fileName) {
-            return new NextResponse("File name is required", { status: 400 });
-        }
-
+        const cleanName = name.replace(/[^a-zA-Z0-9\-_]/g, "");
+        const fileName = cleanName.replace(/-/g, "/") + ".pdf";
         const filePath = path.join(process.cwd(), "pdfs", fileName);
 
         console.log("Attempting to access file at:", filePath);
@@ -32,9 +29,14 @@ export async function GET(
 
         const fileBuffer = await fs.readFile(filePath);
 
+        const responseFileName = `${cleanName}.pdf`;
+
         const headers = {
             "Content-Type": "application/pdf",
-            "Content-Disposition": `inline; filename="${path.basename(fileName)}"`,
+            "Content-Disposition": `inline; filename="${responseFileName}"`,
+            "Cache-Control": "no-store, no-cache, must-revalidate",
+            "Pragma": "no-cache",
+            "Expires": "0",
         };
 
         return new NextResponse(fileBuffer, { headers });

@@ -7,18 +7,22 @@ export async function GET(
     request: Request,
     { params }: { params: Promise<{ name: string }> }
 ) {
-	const { name } = await params;
+    const { name } = await params;
     const session = await auth();
     if (!session) {
         return new NextResponse("Unauthorized", { status: 401 });
     }
 
     try {
-        const cleanName = name.replace(/[^a-zA-Z0-9\-_]/g, "");
-        const fileName = cleanName.replace(/-/g, "/") + ".pdf";
-        const filePath = path.join(process.cwd(), "pdfs", fileName);
+        const parts = name.split("-");
+        if (parts.length < 3) {
+            return new NextResponse("Invalid file name format", { status: 400 });
+        }
 
-        console.log("Attempting to access file at:", filePath);
+        const [term, subject, lessonNum] = parts;
+        const filePath = path.join(process.cwd(), "pdfs", term, subject, `${lessonNum}.pdf`);
+
+        console.log("Accessing file at:", filePath);
 
         try {
             await fs.access(filePath);
@@ -29,11 +33,9 @@ export async function GET(
 
         const fileBuffer = await fs.readFile(filePath);
 
-        const responseFileName = `${cleanName}.pdf`;
-
         const headers = {
             "Content-Type": "application/pdf",
-            "Content-Disposition": `inline; filename="${responseFileName}"`,
+            "Content-Disposition": `inline; filename="${lessonNum}.pdf"`,
             "Cache-Control": "no-store, no-cache, must-revalidate",
             "Pragma": "no-cache",
             "Expires": "0",

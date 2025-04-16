@@ -11,7 +11,6 @@ export default async function Secret() {
 	if (session?.user.role !== "admin") {
 		redirect("/Semester");
 	}
-	const users: UserWithId[] = await listUsers();
 	return (
 		<div>
 			<UserCreationForm />

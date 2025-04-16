@@ -1,3 +1,4 @@
+import "@mantine/core/styles.css";
 import {
 	MantineProvider,
 	ColorSchemeScript,
@@ -35,8 +36,6 @@ export default function RootLayout({
 				>
 					<div className="flex flex-col md:flex-row h-screen overflow-hidden">
 						<Sidebar />
-
-						{/* Main content */}
 						<main className="flex-grow p-2 md:p-4 overflow-y-auto">
 							<MantineProvider>{children}</MantineProvider>
 							<Toaster richColors position={"bottom-center"} />

@@ -5,7 +5,9 @@ export default async function middleware() {
 	const session = await auth();
 
 	if (!session) {
-		return NextResponse.redirect(`https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`);
+		return NextResponse.redirect(
+			`https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`,
+		);
 	}
 
 	return NextResponse.next();

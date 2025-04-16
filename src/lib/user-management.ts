@@ -43,3 +43,18 @@ export async function createUser(userData: NewUser) {
 		throw error;
 	}
 }
+
+export async function listUsers() {
+	try {
+		const userQuery = query(collection(db, "users"));
+		const snapshot = await getDocs(userQuery);
+		const users = snapshot.docs.map((doc) => ({
+			id: doc.id,
+			...doc.data(),
+		}));
+		return users;
+	} catch (error) {
+		console.error("Error listing users:", error);
+		throw error;
+	}
+}

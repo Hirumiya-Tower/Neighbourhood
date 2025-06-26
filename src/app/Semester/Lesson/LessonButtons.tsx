@@ -10,8 +10,8 @@ import { CSS } from "@dnd-kit/utilities";
 
 interface LessonButtonProps {
 	lesson: Lesson;
-	onDelete: (id: string) => void;
-	role?: "user" | "admin"; // ◀︎ roleを受け取るように変更
+	onDelete: (id:string) => void;
+	role?: string; // ◀︎ "user" | "admin" から、もっと広い意味の string に変更しました！
 }
 
 export const LessonButton: React.FC<LessonButtonProps> = ({

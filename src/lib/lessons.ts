@@ -39,12 +39,15 @@ export async function updateLessonsOrder(lessons: Lesson[]) {
 
 export async function getLessons(semester: string, subject: string) {
 	try {
+		// ↓↓↓ この行を追加してください！ ↓↓↓
+		console.log(`【DBに問い合わせ中】学期: "${semester}", 科目: "${subject}"`);
+
 		const lessonsRef = collection(db, "lessons");
 		const q = query(
 			lessonsRef,
 			where("semester", "==", semester),
 			where("subject", "==", subject),
-			orderBy("order", "asc")
+			orderBy("order", "asc"),
 		);
 
 		const querySnapshot = await getDocs(q);
@@ -53,6 +56,9 @@ export async function getLessons(semester: string, subject: string) {
 		querySnapshot.forEach((doc) => {
 			lessons.push({ id: doc.id, ...doc.data() } as unknown as Lesson);
 		});
+
+		// ↓↓↓ この行も追加してください！ ↓↓↓
+		console.log(`→ 結果: ${lessons.length}件の教材を発見！`);
 
 		return lessons;
 	} catch (error) {

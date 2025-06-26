@@ -1,12 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Button, Loader } from "@mantine/core";
-import { getLessons, Lesson, deleteLesson } from "@/lib/lessons";
+import { Button } from "@mantine/core";
+import type { Lesson } from "@/lib/lessons";
 import { useSession } from "next-auth/react";
-import { toast } from "sonner";
 import { IoTrashBin } from "react-icons/io5";
-import { FaCommentDots } from "react-icons/fa6";
+import { FaCommentDots, FaGripVertical } from "react-icons/fa6"; // ← FaGripVertical を追加！
 import Link from "next/link";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -16,13 +14,15 @@ interface LessonButtonProps {
 	onDelete: (id: string) => void;
 }
 
-export const LessonButton: React.FC<LessonButtonProps> = ({ lesson, onDelete }) => {
+export const LessonButton: React.FC<LessonButtonProps> = ({
+															  lesson,
+															  onDelete,
+														  }) => {
 	const { data: session } = useSession();
 
-	// dnd-kitの魔法！
 	const {
 		attributes,
-		listeners,
+		listeners, // ←並べ替えのリスナー
 		setNodeRef,
 		transform,
 		transition,
@@ -34,23 +34,35 @@ export const LessonButton: React.FC<LessonButtonProps> = ({ lesson, onDelete }) 
 	};
 
 	return (
-		<div ref={setNodeRef} style={style} {...attributes} {...listeners} className={"flex flex-row space-x-1 items-center touch-none"}>
-			{/* ↑ このdivがドラッグ対象になります */}
-			<a href={lesson.url} target={"_blank"}>
-				<Button color={"teal"}>{lesson.title}</Button>
+		// ↓↓↓ このdivからは `listeners` を削除します
+		<div
+			ref={setNodeRef}
+			style={style}
+			{...attributes}
+			className={"flex flex-row space-x-2 items-center touch-none bg-[#2a2a2a] p-2 rounded-lg"}
+		>
+			{/* ★★★ このハンドルを追加！ ★★★ */}
+			{/* このハンドルを掴んだ時だけ、並べ替えができるようになります！ */}
+			<div {...listeners} className="cursor-grab touch-none p-1">
+				<FaGripVertical className={"text-gray-400"} />
+			</div>
+
+			<a href={lesson.url} target={"_blank"} rel="noopener noreferrer">
+				<Button color={"teal"} size="sm">{lesson.title}</Button>
 			</a>
-			<div className={"flex flex-col space-y-1 items-center"}>
-				<Link href={`/comments/<span class="math-inline">\{lesson\.semester\}/</span>{lesson.subject}/${lesson.title}`}>
-					<FaCommentDots className={"text-white"} size={15} />
+			<div className={"flex flex-row space-x-3 items-center"}>
+				<Link
+					href={`/comments/${lesson.semester}/${lesson.subject}/${lesson.title}`}
+				>
+					<FaCommentDots className={"text-white hover:text-emerald-300 transition-colors"} size={16} />
 				</Link>
 				{session?.user.role === "admin" && (
-					<div>
+					<button onClick={() => onDelete(lesson.id!)}>
 						<IoTrashBin
-							className={"text-red-500 cursor-pointer"}
-							size={15}
-							onClick={() => onDelete(lesson.id!)}
+							className={"text-red-500 hover:text-red-300 transition-colors"}
+							size={16}
 						/>
-					</div>
+					</button>
 				)}
 			</div>
 		</div>

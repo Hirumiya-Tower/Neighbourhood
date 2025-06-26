@@ -31,7 +31,6 @@ import {
 } from "@/lib/lessons";
 import { LessonButton } from "./LessonButtons";
 
-// ▼▼▼ ここからコンポーネントが始まります ▼▼▼
 export default function ClientLessonPage() {
 	const searchParams = useSearchParams();
 	const { data: session, status } = useSession();
@@ -140,20 +139,22 @@ export default function ClientLessonPage() {
 
 	if (status === "loading" || loading) {
 		return (
-			<div className={"flex justify-center items-center h-screen"}>
-				<Loader color={"teal"} />
+			<div className="flex h-screen items-center justify-center">
+				<Loader color="teal" />
 			</div>
 		);
 	}
 
+	const userRole = session?.user?.role;
+
 	return (
-		<div className="max-w-6xl mx-auto px-4 py-8">
-			<h1 className="text-2xl font-semibold mb-6 border-b border-gray-700 pb-2 tracking-wide font-serif">
+		<div className="mx-auto max-w-6xl px-4 py-8">
+			<h1 className="mb-6 border-b border-gray-700 pb-2 font-serif text-2xl font-semibold tracking-wide">
 				{termDisplay} の授業を選択
 			</h1>
 
 			<Modal opened={opened} onClose={() => setOpened(false)} closeOnClickOutside centered>
-				<h1 className="text-2xl font-semibold mb-6 border-b pb-2 tracking-wide font-serif text-black">
+				<h1 className="mb-6 border-b pb-2 font-serif text-2xl font-semibold tracking-wide text-black">
 					{termDisplay} {currentSubject}の教材を追加
 				</h1>
 				<TextInput
@@ -173,49 +174,59 @@ export default function ClientLessonPage() {
 				</Button>
 			</Modal>
 
-			<div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+			<div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
 				{subjects.map((subject) => {
 					const subjectLessons = lessons
 						.filter((l) => l.subject === subject)
 						.sort((a, b) => a.order - b.order);
 
+					const lessonList = (
+						<div className="flex flex-col space-y-2">
+							{subjectLessons.map((lesson) => (
+								<LessonButton
+									key={lesson.id}
+									lesson={lesson}
+									onDelete={handleDeleteLesson}
+									role={userRole}
+								/>
+							))}
+						</div>
+					);
+
 					return (
 						<div
 							key={subject}
-							className="bg-[#1a1a1a] border border-gray-700 rounded-xl p-4 sm:p-5 shadow-sm hover:shadow-md transition-all"
+							className="rounded-xl border border-gray-700 bg-[#1a1a1a] p-4 shadow-sm transition-all hover:shadow-md sm:p-5"
 						>
-							<h2 className="text-base sm:text-lg font-semibold mb-3 border-b border-gray-600 pb-1 tracking-wide break-words flex flex-row justify-between items-center">
+							<h2 className="mb-3 flex flex-row items-center justify-between border-b border-gray-600 pb-1 font-semibold tracking-wide break-words text-base sm:text-lg">
 								{subject}
-								{session?.user.role === "admin" && (
+								{userRole === "admin" && (
 									<button onClick={() => handleOpenModal(subject)}>
 										<FaCirclePlus
-											className={"text-white hover:text-emerald-400 transition-colors"}
+											className="text-white transition-colors hover:text-emerald-400"
 											size={20}
 										/>
 									</button>
 								)}
 							</h2>
 
-							<DndContext
-								sensors={sensors}
-								collisionDetection={closestCenter}
-								onDragEnd={handleDragEnd}
-							>
-								<SortableContext
-									items={subjectLessons.map((l) => l.id!)}
-									strategy={verticalListSortingStrategy}
+							{/* ▼▼▼ adminの時だけD&D機能を有効にします ▼▼▼ */}
+							{userRole === "admin" ? (
+								<DndContext
+									sensors={sensors}
+									collisionDetection={closestCenter}
+									onDragEnd={handleDragEnd}
 								>
-									<div className="flex flex-wrap gap-3">
-										{subjectLessons.map((lesson) => (
-											<LessonButton
-												key={lesson.id}
-												lesson={lesson}
-												onDelete={handleDeleteLesson}
-											/>
-										))}
-									</div>
-								</SortableContext>
-							</DndContext>
+									<SortableContext
+										items={subjectLessons.map((l) => l.id!)}
+										strategy={verticalListSortingStrategy}
+									>
+										{lessonList}
+									</SortableContext>
+								</DndContext>
+							) : (
+								lessonList
+							)}
 						</div>
 					);
 				})}
@@ -223,4 +234,3 @@ export default function ClientLessonPage() {
 		</div>
 	);
 }
-// ▲▲▲ この、ファイルの最後にある閉じ括弧 `}` が消えていないか、ご確認ください！ ▲▲▲
